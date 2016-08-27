@@ -73,6 +73,8 @@ class IndexHandler(BaseHandler):
 
 
         if msgType != 'text':
+            text = '1、回复城市名称，可以查询该城市当日天气情况' + '\n' + '如：武汉' + '\n' + ' ' + '\n' + '2、回复笑话，可以收到最新笑话' + '\n' + '如：笑话'
+            text = text.encode('utf-8')
             reply = '''
             <xml>
             <ToUserName><![CDATA[%s]]></ToUserName>
@@ -86,7 +88,7 @@ class IndexHandler(BaseHandler):
                 toUserName,
                 createTime,
                 'text',
-                'Unkown Format, Please check out'
+                text,
             )
             return self.write(reply)
 
@@ -195,7 +197,7 @@ class Application(tornado.web.Application):
         settings = dict(
             cookie_secret="61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTp1o/Vo=",
             login_url="/login",
-            debug=True,
+            debug=False,
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
             static_path=os.path.join(os.path.dirname(__file__), "static"),
             xsrf_cookies=False,
