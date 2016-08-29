@@ -23,7 +23,9 @@ import hashlib
 
 import os.path
 
+import urllib
 import sys
+
 default_encoding = 'utf-8'
 if sys.getdefaultencoding() != default_encoding:
     reload(sys)
@@ -162,14 +164,15 @@ class IndexHandler(BaseHandler):
                 content = content_1
 
 	else:
-    	    if type(content).__name__ == "unicode":
-    	        content = content[::-1]
-    	        content = content.encode('utf-8')
+    	    key = '8b005db5f57556fb96dfd98fbccfab84'  
+            api = 'http://www.tuling123.com/openapi/api?key=' + key + '&info='  
 
-    	    elif type(content).__name__ == "str":
-    	        print type(content).__name__
-    	        content = content.decode('gbk').encode('utf-8')
-    	        content = content[::-1]
+            request = api + content.encode('utf-8')
+            page = urllib.urlopen(request)  
+            html = page.read()
+            dic_json = json.loads(html)  
+            content = '小银: '.decode('utf-8') + dic_json['text']
+            content = content.encode('utf-8')
 
     	reply = '''
     	<xml>
