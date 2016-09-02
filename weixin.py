@@ -5,6 +5,9 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.gen
 import tornado.httpclient
+
+from settings import db
+
 import tornado.options
 from tornado.options import options, define
 
@@ -31,11 +34,13 @@ define('port', default=8000, type=int)
 
 
 class BaseHandler(tornado.web.RequestHandler):
+
     def get_current_user(self):
         return self.get_secure_cookie('user')
 
 
 class IndexHandler(BaseHandler):
+
     def get(self):
         print 'coming Get'
         token = 'YourToken'
@@ -52,9 +57,8 @@ class IndexHandler(BaseHandler):
         if hashcode == signature:
             return self.write(echostr)
 
-
     @tornado.web.asynchronous
-    @tornado.gen.engine
+    @tornado.gen.coroutine
     def post(self, *args, **kwargs):
         xml_str = self.request.body
         xml = ET.fromstring(xml_str)
@@ -74,14 +78,13 @@ class IndexHandler(BaseHandler):
                 response = yield tornado.gen.Task(client.fetch, url)
 
                 content = response.body.encode('utf-8').replace('\n', ' ').replace('\r', ' ').replace(
-                ' ', '').replace('<br/>糗', 'flag').replace('<br/><br/>', 'start')
+            ' ', '').replace('<br/>糗', 'flag').replace('<br/><br/>', 'start')
 
                 contentlist = re.findall('flag.*?start(.*?)start', content)
 
                 index = randint(0, len(contentlist)-1)
                 content = contentlist[index-1].replace('<br/>', '\n')
                 content = content.encode('utf-8')
-
 
             else:
                 key = 'b4875784bc9d43eaa07239cecfc7f661'
@@ -90,11 +93,11 @@ class IndexHandler(BaseHandler):
                 url = api + content.encode('utf-8')
                 client = tornado.httpclient.AsyncHTTPClient()
                 response = yield tornado.gen.Task(client.fetch, url)
+                
                 dic_json = json.loads(response.body)
                 content = dic_json['text']
-                print content
                 content = content.encode('utf-8')
-
+            
             reply = '''
             <xml>
             <ToUserName><![CDATA[%s]]></ToUserName>
@@ -104,40 +107,12 @@ class IndexHandler(BaseHandler):
             <Content><![CDATA[%s]]></Content>
             </xml>
             ''' % (fromUserName, toUserName, createTime, msgType, content)
-            self.write(reply)
-            self.finish()
-
+            return self.write(reply)
+                
 
 class HelloHandler(BaseHandler):
-
-    # @tornado.web.asynchronous
-    # @tornado.gen.engine
     def get(self, *args, **kwargs):
-        # url = 'http://wthrcdn.etouch.cn/WeatherApi?city=%s' % '武汉'
-
-        # sync
-        # http_request = tornado.httpclient.HTTPRequest(url, method='GET')
-        # synClient = tornado.httpclient.HTTPClient()
-        # response = synClient.fetch(http_request)
-
-        # async
-        # client = tornado.httpclient.AsyncHTTPClient()
-        # response = yield tornado.gen.Task(client.fetch, url)
-        # print response.body
-
-        # xml = ET.fromstring(response.body)
-
-        # print url
-        # fengli = xml.find('fengli').text
-        # print fengli 
-
-        # request = urllib.urlopen(url)
-        # htmlCode = request.read()
-        # print htmlCode
-
-
         return self.write("Python say: Hello Winson")
-        # self.finish()
 
 
 class Application(tornado.web.Application):
@@ -150,7 +125,7 @@ class Application(tornado.web.Application):
         settings = dict(
             cookie_secret="61oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTp1o/Vo=",
             login_url="/login",
-            debug=False,
+            debug=True,
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
             static_path=os.path.join(os.path.dirname(__file__), "static"),
             xsrf_cookies=False,
