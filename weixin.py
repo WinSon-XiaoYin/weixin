@@ -6,8 +6,6 @@ import tornado.ioloop
 import tornado.gen
 import tornado.httpclient
 
-from settings import db
-
 import tornado.options
 from tornado.options import options, define
 
@@ -107,7 +105,8 @@ class IndexHandler(BaseHandler):
             <Content><![CDATA[%s]]></Content>
             </xml>
             ''' % (fromUserName, toUserName, createTime, msgType, content)
-            return self.write(reply)
+            self.write(reply)
+            self.finish()
                 
 
 class HelloHandler(BaseHandler):
